@@ -152,102 +152,176 @@ where dp.type_desc = 'SQL_USER'
 
 # Object of datata base
 
+    ```sql
+    select distinct type_desc from  sys.objects
+    ```
+    These objects are part of the database's metadata and serve different purposes within the database management system. Here's an explanation of each object type:
+    
+    1. **SYSTEM_TABLE**: These are system catalog tables that store metadata about the database, tables, columns, indexes, and other objects in the database. They are used internally by the database management system.
+    
+    2. **DEFAULT_CONSTRAINT**: A default constraint is a rule that defines a default value for a column in a table. It specifies what value should be inserted into the column if no value is provided during an INSERT operation.
+    
+    3. **SQL_STORED_PROCEDURE**: A stored procedure is a set of SQL statements that can be executed as a single unit. Stored procedures are often used to encapsulate and organize complex logic in the database.
+    
+    4. **FOREIGN_KEY_CONSTRAINT**: A foreign key constraint defines a relationship between two tables. It enforces referential integrity by ensuring that values in a column of one table correspond to values in a column of another table.
+    
+    5. **SERVICE_QUEUE**: Service queues are used in SQL Server for message processing within Service Broker, a messaging framework for asynchronous communication between database components.
+    
+    6. **USER_TABLE**: These are user-created tables used to store data in the database. They are typically the tables where application data is stored.
+    
+    7. **PRIMARY_KEY_CONSTRAINT**: A primary key constraint ensures that each row in a table has a unique identifier (the primary key) and enforces data integrity by preventing duplicate values.
+    
+    8. **INTERNAL_TABLE**: Internal tables are typically used by the SQL Server engine for temporary storage and query optimization purposes. They are not directly accessible or visible to users.
+    
+    9. **SQL_TRIGGER**: A trigger is a database object that automatically executes a specified set of SQL statements or a user-defined function in response to a specific event, such as an INSERT, UPDATE, or DELETE operation.
+    
+    10. **SQL_SCALAR_FUNCTION**: Scalar functions are user-defined functions that return a single value based on input parameters. They can be used within SQL queries and expressions.
+    
+    11. **UNIQUE_CONSTRAINT**: A unique constraint ensures that values in a column or combination of columns are unique within a table, preventing duplicate values.
+    
+    These object types and constraints are fundamental components of a SQL Server database, and they serve different purposes to maintain data integrity, enforce rules, and manage data within the database.
+    
+    ### Examples
+    1. **SYSTEM_TABLE**:
+       - Example: `sys.tables` or `sys.columns` are system catalog tables that store information about user-created tables and columns within a database.
+    
+    2. **DEFAULT_CONSTRAINT**:
+       - Example: You have a "Customers" table with a "RegistrationDate" column, and you set a default constraint to insert the current date if no value is provided during an INSERT operation.
+    
+    3. **SQL_STORED_PROCEDURE**:
+       - Example:
+         ```sql
+         CREATE PROCEDURE GetEmployeeList
+         AS
+         BEGIN
+             SELECT * FROM Employees;
+         END;
+         ```
+    
+    4. **FOREIGN_KEY_CONSTRAINT**:
+       - Example: You have an "Orders" table with a "CustomerID" column that references the "Customers" table's "CustomerID" column to ensure that each order has a valid customer.
+    
+    5. **SERVICE_QUEUE**:
+       - Example: Service queues are typically used within the Service Broker framework for asynchronous message processing. Detailed examples would involve Service Broker configurations and activation procedures.
+    
+    6. **USER_TABLE**:
+       - Example:
+         ```sql
+         CREATE TABLE Customers (
+             CustomerID INT PRIMARY KEY,
+             FirstName VARCHAR(50),
+             LastName VARCHAR(50)
+         );
+         ```
+    
+    7. **PRIMARY_KEY_CONSTRAINT**:
+       - Example: In the "Products" table, you set the "ProductID" column as the primary key to ensure each product has a unique identifier.
+
+
+
+    8. **INTERNAL_TABLE**:
+       - Internal tables are managed by the SQL Server engine and are not directly accessible by users. Examples of these tables include temporary tables created during query processing.
+    
+    9. **SQL_TRIGGER**:
+       - Example:
+         ```sql
+         CREATE TRIGGER EmployeeAudit
+         ON Employees
+         AFTER INSERT, UPDATE, DELETE
+         AS
+         BEGIN
+             -- Trigger logic to log changes
+         END;
+         ```
+    
+    10. **SQL_SCALAR_FUNCTION**:
+        - Example:
+          ```sql
+          CREATE FUNCTION CalculateTax(@Income DECIMAL(10, 2))
+          RETURNS DECIMAL(10, 2)
+          AS
+          BEGIN
+              RETURN @Income * 0.15; -- Assuming a simple tax calculation
+          END;
+    
+          declare @x_1 int
+          declare @x_2 decimal(10,2) 
+          set @x_1 = 5
+          set @x_2 = 1.2
+          select dbo.tem_func(@X_1,@x_2) 
+          ```
+    
+    11. **UNIQUE_CONSTRAINT**:
+        - Example: In the "Emails" table, you set a unique constraint on the "EmailAddress" column to ensure that no two records can have the same email address.
+
+        ```sql
+        --revoke execute on dbo.tem_func to RL_guest_manager
+        --select * from sys.database_role_members
+        --select * from sys.database_principals
+        --create role RL_guest_manager 
+        /*
+        select * from sys.objects
+        where name like '%tem_func%'
+        */
+        
+        ```
+
+
+# Get information of objects and user
+- we use the tables:
+  - sys.database_permissions
+  - sys.database_principals
+  - sys.objects
 ```sql
-select distinct type_desc from  sys.objects
+select 
+	DP.name as db_user,
+	P.name as obj_name,
+	DP.type_desc AS type_user,
+	p.type_desc AS type_obj,
+	PM.permission_name AS permission
+FROM sys.database_permissions PM
+JOIN sys.database_principals DP on PM.grantee_principal_id = DP.principal_id
+JOIN sys.objects P on PM.major_id = P.object_id
+WHERE DP.type_desc = 'SQL_USER'
 ```
-These objects are part of the database's metadata and serve different purposes within the database management system. Here's an explanation of each object type:
 
-1. **SYSTEM_TABLE**: These are system catalog tables that store metadata about the database, tables, columns, indexes, and other objects in the database. They are used internally by the database management system.
+# Login and User
+In SQL Server, you can create a login and associate it with a user in a specific database. Here's how you can create a login and a user:
 
-2. **DEFAULT_CONSTRAINT**: A default constraint is a rule that defines a default value for a column in a table. It specifies what value should be inserted into the column if no value is provided during an INSERT operation.
+1. **Create a Login**:
 
-3. **SQL_STORED_PROCEDURE**: A stored procedure is a set of SQL statements that can be executed as a single unit. Stored procedures are often used to encapsulate and organize complex logic in the database.
+   You can create a login at the server level. A login is associated with a SQL Server instance and is used for authentication. Here's an example:
 
-4. **FOREIGN_KEY_CONSTRAINT**: A foreign key constraint defines a relationship between two tables. It enforces referential integrity by ensuring that values in a column of one table correspond to values in a column of another table.
+   ```sql
+   USE master;
+   CREATE LOGIN YourLoginName
+   WITH PASSWORD = 'YourPassword';
 
-5. **SERVICE_QUEUE**: Service queues are used in SQL Server for message processing within Service Broker, a messaging framework for asynchronous communication between database components.
+   create user guest_game for login game_1
+   ```
 
-6. **USER_TABLE**: These are user-created tables used to store data in the database. They are typically the tables where application data is stored.
+   Replace `YourLoginName` with the desired login name and `'YourPassword'` with the desired password for the login. Make sure to choose a strong password.
 
-7. **PRIMARY_KEY_CONSTRAINT**: A primary key constraint ensures that each row in a table has a unique identifier (the primary key) and enforces data integrity by preventing duplicate values.
+2. **Create a User**:
 
-8. **INTERNAL_TABLE**: Internal tables are typically used by the SQL Server engine for temporary storage and query optimization purposes. They are not directly accessible or visible to users.
+   After creating the login, you can associate it with a user in a specific database. A user is used to control access to that database. Here's an example:
 
-9. **SQL_TRIGGER**: A trigger is a database object that automatically executes a specified set of SQL statements or a user-defined function in response to a specific event, such as an INSERT, UPDATE, or DELETE operation.
+   ```sql
+    USE master;
+    CREATE USEr game_1 for login 
+    WITH PASSWORD = 'Abc123456789+-';
+   ```
 
-10. **SQL_SCALAR_FUNCTION**: Scalar functions are user-defined functions that return a single value based on input parameters. They can be used within SQL queries and expressions.
+   Replace `YourDatabaseName` with the name of the database in which you want to create the user and `YourUserName` with the desired username. `YourLoginName` should match the login name you created in the previous step.
 
-11. **UNIQUE_CONSTRAINT**: A unique constraint ensures that values in a column or combination of columns are unique within a table, preventing duplicate values.
+3. **Grant Permissions** (Optional):
 
-These object types and constraints are fundamental components of a SQL Server database, and they serve different purposes to maintain data integrity, enforce rules, and manage data within the database.
+   You can grant specific permissions to the user within the database if needed. For example:
 
-### Examples
-1. **SYSTEM_TABLE**:
-   - Example: `sys.tables` or `sys.columns` are system catalog tables that store information about user-created tables and columns within a database.
+   ```sql
+   GRANT SELECT, INSERT, UPDATE, DELETE ON YourTableName TO YourUserName;
+   ```
 
-2. **DEFAULT_CONSTRAINT**:
-   - Example: You have a "Customers" table with a "RegistrationDate" column, and you set a default constraint to insert the current date if no value is provided during an INSERT operation.
+   Replace `YourTableName` with the name of the table or object on which you want to grant permissions and `YourUserName` with the username you created.
 
-3. **SQL_STORED_PROCEDURE**:
-   - Example:
-     ```sql
-     CREATE PROCEDURE GetEmployeeList
-     AS
-     BEGIN
-         SELECT * FROM Employees;
-     END;
-     ```
-
-4. **FOREIGN_KEY_CONSTRAINT**:
-   - Example: You have an "Orders" table with a "CustomerID" column that references the "Customers" table's "CustomerID" column to ensure that each order has a valid customer.
-
-5. **SERVICE_QUEUE**:
-   - Example: Service queues are typically used within the Service Broker framework for asynchronous message processing. Detailed examples would involve Service Broker configurations and activation procedures.
-
-6. **USER_TABLE**:
-   - Example:
-     ```sql
-     CREATE TABLE Customers (
-         CustomerID INT PRIMARY KEY,
-         FirstName VARCHAR(50),
-         LastName VARCHAR(50)
-     );
-     ```
-
-7. **PRIMARY_KEY_CONSTRAINT**:
-   - Example: In the "Products" table, you set the "ProductID" column as the primary key to ensure each product has a unique identifier.
-     
-8. **INTERNAL_TABLE**:
-   - Internal tables are managed by the SQL Server engine and are not directly accessible by users. Examples of these tables include temporary tables created during query processing.
-
-9. **SQL_TRIGGER**:
-   - Example:
-     ```sql
-     CREATE TRIGGER EmployeeAudit
-     ON Employees
-     AFTER INSERT, UPDATE, DELETE
-     AS
-     BEGIN
-         -- Trigger logic to log changes
-     END;
-     ```
-
-10. **SQL_SCALAR_FUNCTION**:
-    - Example:
-      ```sql
-      CREATE FUNCTION CalculateTax(@Income DECIMAL(10, 2))
-      RETURNS DECIMAL(10, 2)
-      AS
-      BEGIN
-          RETURN @Income * 0.15; -- Assuming a simple tax calculation
-      END;
-
-      declare @x_1 int
-      declare @x_2 decimal(10,2) 
-      set @x_1 = 5
-      set @x_2 = 1.2
-      select dbo.tem_func(@X_1,@x_2) 
-      ```
-
-11. **UNIQUE_CONSTRAINT**:
-    - Example: In the "Emails" table, you set a unique constraint on the "EmailAddress" column to ensure that no two records can have the same email address.
+Remember to use secure and best practices for login and user creation, such as using strong passwords, avoiding the use of the "sa" account for application access, and granting the least necessary permissions to users for security purposes.
