@@ -325,3 +325,30 @@ In SQL Server, you can create a login and associate it with a user in a specific
    Replace `YourTableName` with the name of the table or object on which you want to grant permissions and `YourUserName` with the username you created.
 
 Remember to use secure and best practices for login and user creation, such as using strong passwords, avoiding the use of the "sa" account for application access, and granting the least necessary permissions to users for security purposes.
+
+
+# Grouping sets
+
+```sql
+select col1, col2, .... , agg_func
+from your_table
+group by Grouping sets(
+
+    (col1, col2), (col1), (col2), ()
+);
+```
+## rollup
+```sql
+select col1, col2, ..., agg_func(col3)
+from your_table
+group by Rollup (col1,col2,...)
+
+
+```
+
+# Pivot
+```sql
+select * from (select col1, col2, col3 from yourtable) as sourtable PIVOT (aggregate_function(col3) for PivotColumn in ([Value1], [Value2], ...[ValueN]) as PivotTable)
+
+
+```
